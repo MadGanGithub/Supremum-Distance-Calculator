@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Supremum Distance Calculator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    .container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    label, input {
+        display: block;
+        margin-bottom: 10px;
+    }
+    button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        width: fit-content;
+        font-size: large;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    #result {
+        margin-top: 20px;
+    }
+    #upload {
+        padding: 5px 10px;
+        background-color: green;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        text-align: center;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background-color: #007bff;
+        color: white;
+
+    }
+</style>
+</head>
+<body>
+    <div>
+        <div style="text-align: center;"><h2>Data Warehouse and Data Mining Assignment</h2></div>
+        <div style="text-align: center;"><h3>Supremum Distance</h3></div>
+        <div class="container" style="display: flex; flex-direction: column; gap: 0px;">
+            <div style="display: flex; flex-direction: row; gap: 5px;">
+            <label style="font-weight: bold;">Name : </label>
+            Madhav Ganesan
+            </div>
+            <div style="display: flex; flex-direction: row; gap: 5px;">
+            <label style="font-weight: bold;">Register No : </label>
+            125156066
+            </div>
+        </div>
+        <div class="container" style="flex-direction: column; display: flex; gap: 5px;">
+            <label for="xData">X Reference Point:</label>
+            <input type="text" id="xData" placeholder="e.g., 1" required>
+            <label for="yData">Y Reference Point:</label>
+            <input type="text" id="yData" placeholder="e.g., 1" required>
+            <label for="yData">CSV template:<span style="font-weight: bold; font-size: smaller;">* download the template and add x values for first column and y values for second column</span></label>
+            <button onclick="func()">Download</button>
+            <label id="upload" for="csvFile">Upload
+            </label>
+            <input type="file" id="csvFile" accept=".csv" style="display: none;" required>
+            <div style="display: flex; justify-content: center;">
+                <button onclick="calculateSupremumDistance()">Calculate Supremum Distance</button>
+            </div>
+            <div id="result"></div>
+            <canvas id="myChart" width="800" height="400"></canvas>
+        </div>
+    </div>
+<script>
+    function func() {
+        const fileUrl = './template.csv';
+        
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = 'filename';
+        
+        document.body.appendChild(link);
+        
+        link.click();
+        
+        document.body.removeChild(link);
+    }
+    
+    function calculateSupremumDistance() {
+        const xDataInput = document.getElementById('xData').value;
+        const yDataInput = document.getElementById('yData').value;
+    
+        const xData = xDataInput.split(',').map(Number);
+        const yData = yDataInput.split(',').map(Number);
+    
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+    
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const csvData = event.target.result.split('\n');
+            const csvXData = csvData.map(row => Number(row.split(',')[0]));
+            const csvYData = csvData.map(row => Number(row.split(',')[1]));
+    
+            let tableContent = '<table><tr><th>X</th><th>Y</th><th>Supremum Distance</th></tr>';
+            let chartData = [];
+            for (let i = 0; i < csvXData.length; i++) {
+                const diff1 = Math.abs(xData[0] - csvXData[i]);
+                const diff2 = Math.abs(yData[0] - csvYData[i]);
+                const maxDiff = Math.max(diff1, diff2);
+    
+                tableContent += `<tr><td>${csvXData[i]}</td><td>${csvYData[i]}</td><td>${maxDiff}</td></tr>`;
+                chartData.push({ x: csvXData[i], y: csvYData[i], maxDiff: maxDiff });
+            }
+            tableContent += '</table>';
+    
+            document.getElementById('result').innerHTML = tableContent;
+
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const scatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Scatter Plot',
+                        data: chartData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'X-axis'
+                            }            
+                        },
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Y-axis'
+                            }            
+                        }
+                    }
+                }
+            });
+            
+        };
+    
+        reader.readAsText(file);
+    }
+</script>
+</body>
+</html>
